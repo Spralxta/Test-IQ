@@ -5,7 +5,6 @@ from datetime import datetime
 import math
 import os
 
-
 class StanfordBinetTest:
     def __init__(self):
         self.window = tk.Tk()
@@ -69,13 +68,76 @@ class StanfordBinetTest:
         main.place(relx=0.5, rely=0.5, anchor="center", width=600, height=500)
 
         tk.Label(main, text="🧠 Тест Стэнфорд-Бине",
-                 font=("Arial", 32, "bold"), bg=self.colors["bg"], fg=self.colors["text"]).pack(pady=30)
+                font=("Arial", 32, "bold"), bg=self.colors["bg"], fg=self.colors["text"]).pack(pady=30)
         tk.Label(main, text="Пятая редакция",
-                 font=("Arial", 18), bg=self.colors["bg"], fg=self.colors["light_text"]).pack(pady=10)
+                font=("Arial", 18), bg=self.colors["bg"], fg=self.colors["light_text"]).pack(pady=10)
         tk.Label(main, text="", bg=self.colors["bg"]).pack(pady=20)
-
 
 # Запуск
 if __name__ == "__main__":
     app = StanfordBinetTest()
     app.window.mainloop()
+    """
+    ТЕСТ СТЭНФОРД-БИНЕ - Commit 2/10
+    Добавлены узоры на фон и кнопка выхода
+    """
+
+    # Добавлено в __init__ после self.window.configure:
+    self.create_patterns()
+
+    # Добавлены кнопки в show_main_menu:
+    btn_exit = tk.Button(main, text="❌ ВЫХОД", font=("Arial", 16, "bold"),
+                         bg=self.colors["wrong"], fg=self.colors["text"],
+                         command=self.window.quit, cursor="hand2")
+    btn_exit.pack(pady=10)
+
+
+    # Новая функция:
+    def create_patterns(self):
+        """Создаёт красивые узоры на фоне"""
+        self.pattern_canvas = tk.Canvas(
+            self.window,
+            highlightthickness=0,
+            bg=self.colors["bg"]
+        )
+        self.pattern_canvas.place(x=0, y=0, relwidth=1, relheight=1)
+
+        def draw_patterns(event):
+            self.pattern_canvas.delete("all")
+            width = event.width
+            height = event.height
+
+            # Точки
+            for x in range(0, width, 50):
+                for y in range(0, height, 50):
+                    if random.random() > 0.7:
+                        self.pattern_canvas.create_oval(
+                            x - 2, y - 2, x + 2, y + 2,
+                            fill=self.colors["pattern"],
+                            outline=""
+                        )
+
+            # Волнистые линии
+            for y in range(0, height, 100):
+                points = []
+                for x in range(0, width, 20):
+                    points.append(x)
+                    points.append(y + 15 * math.sin(x / 50))
+                self.pattern_canvas.create_line(
+                    points,
+                    fill=self.colors["pattern"],
+                    width=1,
+                    dash=(10, 20)
+                )
+
+            # Кружочки по углам
+            for x in [20, width - 20]:
+                for y in [20, height - 20]:
+                    self.pattern_canvas.create_oval(
+                        x - 15, y - 15, x + 15, y + 15,
+                        outline=self.colors["pattern"],
+                        width=1,
+                        dash=(5, 5)
+                    )
+
+        self.pattern_canvas.bind("<Configure>", draw_patterns)
