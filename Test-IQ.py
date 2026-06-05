@@ -1,10 +1,9 @@
 """
-ТЕСТ СТЭНФОРД-БИНЕ - Версия 3/10
-Добавлены функции создания закругленных кнопок и полей ввода
+Добавлен экран ввода имени и возраста пользователя
 """
 
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 import random
 from datetime import datetime
 import math
@@ -179,7 +178,7 @@ class StanfordBinetTest:
                 widget.destroy()
 
         main = tk.Frame(self.window, bg=self.colors["bg"])
-        main.place(relx=0.5, rely=0.5, anchor="center", width=600, height=500)
+        main.place(relx=0.5, rely=0.5, anchor="center", width=600, height=650)
 
         tk.Label(main, text="🧠 Тест Стэнфорд-Бине",
                 font=("Arial", 32, "bold"), bg=self.colors["bg"], fg=self.colors["text"]).pack(pady=30)
@@ -187,8 +186,86 @@ class StanfordBinetTest:
                 font=("Arial", 18), bg=self.colors["bg"], fg=self.colors["light_text"]).pack(pady=10)
         tk.Label(main, text="", bg=self.colors["bg"]).pack(pady=20)
 
+        btn_start = self.create_rounded_button(main, "🚀 НАЧАТЬ ТЕСТ", self.show_input_screen, self.colors["primary"], 350, 55)
+        btn_start.pack(pady=10)
+
         btn_exit = self.create_rounded_button(main, "❌ ВЫХОД", self.window.quit, self.colors["wrong"], 350, 55)
         btn_exit.pack(pady=10)
+
+    def show_input_screen(self):
+        """Экран ввода данных"""
+        self.timer_running = False
+        for widget in self.window.winfo_children():
+            if widget != self.pattern_canvas:
+                widget.destroy()
+
+        main = tk.Frame(self.window, bg=self.colors["bg"])
+        main.pack(expand=True, fill="both", padx=50, pady=30)
+
+        back_btn = self.create_rounded_back_button(main, self.show_main_menu)
+        back_btn.place(x=10, y=10)
+
+        tk.Label(main, text="🧠 Тест Стэнфорд-Бине",
+                font=("Arial", 32, "bold"), bg=self.colors["bg"], fg=self.colors["text"]).pack(pady=(20,5))
+        tk.Label(main, text="Пятая редакция",
+                font=("Arial", 18), bg=self.colors["bg"], fg=self.colors["light_text"]).pack(pady=(0,20))
+
+        info = tk.Frame(main, bg=self.colors["card"], relief="solid", bd=1)
+        info.pack(pady=20, fill="x", padx=20)
+        info_text = """Тест измеряет пять факторов когнитивных способностей:
+        
+• Fluid Reasoning (Текучий интеллект)
+• Knowledge (Знания)
+• Quantitative Reasoning (Количественное мышление)
+• Visual-Spatial Processing (Визуально-пространственное мышление)
+• Working Memory (Рабочая память)
+
+Всего 60 вопросов для разных возрастных уровней."""
+        tk.Label(info, text=info_text, font=("Arial", 11), bg=self.colors["card"],
+                fg=self.colors["text"], justify="left", padx=20, pady=15).pack()
+
+        form = tk.Frame(main, bg=self.colors["bg"])
+        form.pack(fill="x", pady=20, padx=20)
+
+        tk.Label(form, text="Ваше имя:", font=("Arial", 14, "bold"),
+                bg=self.colors["bg"], fg=self.colors["text"], anchor="w").pack(fill="x", pady=(5,5))
+        self.create_rounded_entry(form, self.name_var, 40).pack(fill="x", pady=5)
+
+        tk.Label(form, text="Ваш возраст (полных лет):", font=("Arial", 14, "bold"),
+                bg=self.colors["bg"], fg=self.colors["text"], anchor="w").pack(fill="x", pady=(15,5))
+        self.create_rounded_entry(form, self.age_var, 40).pack(fill="x", pady=5)
+
+        tk.Label(form, text="Например: 25", font=("Arial", 11),
+                bg=self.colors["bg"], fg=self.colors["light_text"], anchor="w").pack(fill="x", pady=(5,20))
+
+        start_btn = self.create_rounded_button(form, "🚀 НАЧАТЬ ТЕСТ", self.validate_and_start, self.colors["primary"], 700, 60)
+        start_btn.pack(pady=20)
+
+    def validate_and_start(self):
+        """Проверка данных и начало теста"""
+        name = self.name_var.get().strip()
+        age_str = self.age_var.get().strip()
+
+        if not name or not age_str:
+            messagebox.showerror("Ошибка", "Пожалуйста, заполните все поля")
+            return
+
+        try:
+            age = int(age_str)
+            if age < 2:
+                messagebox.showerror("Ошибка", "Возраст должен быть не менее 2 лет")
+                return
+            self.user_data["name"] = name
+            self.user_data["age"] = age
+            self.user_data["chronological_age_months"] = age * 12
+            self.start_test()
+        except ValueError:
+            messagebox.showerror("Ошибка", "Введите корректный возраст")
+
+    def start_test(self):
+        """Начинает тест (заглушка)"""
+        messagebox.showinfo("Информация", "Тест начнется в следующей версии")
+        self.show_main_menu()
 
     def run(self):
         self.window.mainloop()
