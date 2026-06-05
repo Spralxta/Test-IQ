@@ -141,3 +141,68 @@ if __name__ == "__main__":
                     )
 
         self.pattern_canvas.bind("<Configure>", draw_patterns)
+        """
+        ТЕСТ СТЭНФОРД-БИНЕ - Commit 3/10
+        Добавлены функции создания закругленных кнопок и полей ввода
+        """
+
+        def create_round_rect(self, canvas, x1, y1, x2, y2, radius=25, **kwargs):
+            """Создаёт прямоугольник со скруглёнными углами"""
+            points = [x1 + radius, y1,
+                      x2 - radius, y1,
+                      x2, y1,
+                      x2, y1 + radius,
+                      x2, y2 - radius,
+                      x2, y2,
+                      x2 - radius, y2,
+                      x1 + radius, y2,
+                      x1, y2,
+                      x1, y2 - radius,
+                      x1, y1 + radius,
+                      x1, y1]
+            return canvas.create_polygon(points, smooth=True, **kwargs)
+
+        def create_rounded_button(self, parent, text, command, bg_color=None, width=350, height=50):
+            """Создаёт закруглённую кнопку"""
+            if bg_color is None:
+                bg_color = self.colors["primary"]
+            frame = tk.Frame(parent, bg=self.colors["bg"])
+            canvas = tk.Canvas(frame, width=width, height=height, bg=self.colors["bg"], highlightthickness=0)
+            canvas.pack()
+            self.create_round_rect(canvas, 5, 5, width - 5, height - 5, radius=25, fill=bg_color, outline=bg_color)
+            canvas.create_text(width // 2, height // 2, text=text, font=("Arial", 14, "bold"), fill=self.colors["text"])
+            canvas.tag_bind("all", "<Button-1>", lambda e: command())
+            canvas.config(cursor="hand2")
+            return frame
+
+        def create_rounded_back_button(self, parent, command):
+            """Создаёт маленькую закруглённую кнопку назад"""
+            frame = tk.Frame(parent, bg=self.colors["bg"])
+            canvas = tk.Canvas(frame, width=80, height=35, bg=self.colors["bg"], highlightthickness=0)
+            canvas.pack()
+            self.create_round_rect(canvas, 5, 5, 75, 30, radius=12, fill=self.colors["secondary"],
+                                   outline=self.colors["secondary"])
+            canvas.create_text(40, 17, text="← Назад", font=("Arial", 10, "bold"), fill=self.colors["text"])
+            canvas.tag_bind("all", "<Button-1>", lambda e: command())
+            canvas.config(cursor="hand2")
+            return frame
+
+        def create_rounded_entry(self, parent, textvariable, width=40):
+            """Создаёт поле ввода со скруглёнными углами"""
+            frame = tk.Frame(parent, bg=self.colors["bg"])
+            frame.pack(fill="x", pady=5)
+            canvas = tk.Canvas(frame, height=45, bg=self.colors["bg"], highlightthickness=0)
+            canvas.pack(fill="x")
+            entry = tk.Entry(canvas, textvariable=textvariable, font=("Arial", 14), bg="white", fg=self.colors["text"],
+                             relief="flat", bd=0)
+
+            def redraw(e):
+                canvas.delete("rect")
+                w = e.width
+                self.create_round_rect(canvas, 5, 5, w - 5, 40, radius=15, fill="white", outline=self.colors["primary"],
+                                       width=2, tags="rect")
+                canvas.itemconfig(entry, width=w - 20)
+
+            canvas.bind("<Configure>", redraw)
+            canvas.create_window(10, 22, window=entry, anchor="w", width=canvas.winfo_width() - 20)
+            return frame
