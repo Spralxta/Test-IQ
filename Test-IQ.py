@@ -1,9 +1,15 @@
+"""
+ТЕСТ СТЭНФОРД-БИНЕ - Версия 2/10
+Добавлены узоры на фон и кнопка выхода
+"""
+
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 import random
 from datetime import datetime
 import math
 import os
+
 
 class StanfordBinetTest:
     def __init__(self):
@@ -26,6 +32,9 @@ class StanfordBinetTest:
         }
 
         self.window.configure(bg=self.colors["bg"])
+
+        # Создаём узоры на фоне
+        self.create_patterns()
 
         # Данные пользователя
         self.user_data = {
@@ -56,43 +65,8 @@ class StanfordBinetTest:
         if not os.path.exists(self.results_dir):
             os.makedirs(self.results_dir)
 
-        # Показываем главное меню
         self.show_main_menu()
 
-    def show_main_menu(self):
-        """Показывает главное меню"""
-        for widget in self.window.winfo_children():
-            widget.destroy()
-
-        main = tk.Frame(self.window, bg=self.colors["bg"])
-        main.place(relx=0.5, rely=0.5, anchor="center", width=600, height=500)
-
-        tk.Label(main, text="🧠 Тест Стэнфорд-Бине",
-                font=("Arial", 32, "bold"), bg=self.colors["bg"], fg=self.colors["text"]).pack(pady=30)
-        tk.Label(main, text="Пятая редакция",
-                font=("Arial", 18), bg=self.colors["bg"], fg=self.colors["light_text"]).pack(pady=10)
-        tk.Label(main, text="", bg=self.colors["bg"]).pack(pady=20)
-
-# Запуск
-if __name__ == "__main__":
-    app = StanfordBinetTest()
-    app.window.mainloop()
-    """
-    ТЕСТ СТЭНФОРД-БИНЕ - Commit 2/10
-    Добавлены узоры на фон и кнопка выхода
-    """
-
-    # Добавлено в __init__ после self.window.configure:
-    self.create_patterns()
-
-    # Добавлены кнопки в show_main_menu:
-    btn_exit = tk.Button(main, text="❌ ВЫХОД", font=("Arial", 16, "bold"),
-                         bg=self.colors["wrong"], fg=self.colors["text"],
-                         command=self.window.quit, cursor="hand2")
-    btn_exit.pack(pady=10)
-
-
-    # Новая функция:
     def create_patterns(self):
         """Создаёт красивые узоры на фоне"""
         self.pattern_canvas = tk.Canvas(
@@ -107,7 +81,7 @@ if __name__ == "__main__":
             width = event.width
             height = event.height
 
-            # Точки
+            # Узор 1: Маленькие точки
             for x in range(0, width, 50):
                 for y in range(0, height, 50):
                     if random.random() > 0.7:
@@ -117,12 +91,13 @@ if __name__ == "__main__":
                             outline=""
                         )
 
-            # Волнистые линии
+            # Узор 2: Волнистые линии
             for y in range(0, height, 100):
                 points = []
                 for x in range(0, width, 20):
                     points.append(x)
                     points.append(y + 15 * math.sin(x / 50))
+
                 self.pattern_canvas.create_line(
                     points,
                     fill=self.colors["pattern"],
@@ -130,7 +105,7 @@ if __name__ == "__main__":
                     dash=(10, 20)
                 )
 
-            # Кружочки по углам
+            # Узор 3: Маленькие кружочки по углам
             for x in [20, width - 20]:
                 for y in [20, height - 20]:
                     self.pattern_canvas.create_oval(
@@ -141,68 +116,31 @@ if __name__ == "__main__":
                     )
 
         self.pattern_canvas.bind("<Configure>", draw_patterns)
-        """
-        ТЕСТ СТЭНФОРД-БИНЕ - Commit 3/10
-        Добавлены функции создания закругленных кнопок и полей ввода
-        """
 
-        def create_round_rect(self, canvas, x1, y1, x2, y2, radius=25, **kwargs):
-            """Создаёт прямоугольник со скруглёнными углами"""
-            points = [x1 + radius, y1,
-                      x2 - radius, y1,
-                      x2, y1,
-                      x2, y1 + radius,
-                      x2, y2 - radius,
-                      x2, y2,
-                      x2 - radius, y2,
-                      x1 + radius, y2,
-                      x1, y2,
-                      x1, y2 - radius,
-                      x1, y1 + radius,
-                      x1, y1]
-            return canvas.create_polygon(points, smooth=True, **kwargs)
+    def show_main_menu(self):
+        """Показывает главное меню"""
+        for widget in self.window.winfo_children():
+            if widget != self.pattern_canvas:
+                widget.destroy()
 
-        def create_rounded_button(self, parent, text, command, bg_color=None, width=350, height=50):
-            """Создаёт закруглённую кнопку"""
-            if bg_color is None:
-                bg_color = self.colors["primary"]
-            frame = tk.Frame(parent, bg=self.colors["bg"])
-            canvas = tk.Canvas(frame, width=width, height=height, bg=self.colors["bg"], highlightthickness=0)
-            canvas.pack()
-            self.create_round_rect(canvas, 5, 5, width - 5, height - 5, radius=25, fill=bg_color, outline=bg_color)
-            canvas.create_text(width // 2, height // 2, text=text, font=("Arial", 14, "bold"), fill=self.colors["text"])
-            canvas.tag_bind("all", "<Button-1>", lambda e: command())
-            canvas.config(cursor="hand2")
-            return frame
+        main = tk.Frame(self.window, bg=self.colors["bg"])
+        main.place(relx=0.5, rely=0.5, anchor="center", width=600, height=500)
 
-        def create_rounded_back_button(self, parent, command):
-            """Создаёт маленькую закруглённую кнопку назад"""
-            frame = tk.Frame(parent, bg=self.colors["bg"])
-            canvas = tk.Canvas(frame, width=80, height=35, bg=self.colors["bg"], highlightthickness=0)
-            canvas.pack()
-            self.create_round_rect(canvas, 5, 5, 75, 30, radius=12, fill=self.colors["secondary"],
-                                   outline=self.colors["secondary"])
-            canvas.create_text(40, 17, text="← Назад", font=("Arial", 10, "bold"), fill=self.colors["text"])
-            canvas.tag_bind("all", "<Button-1>", lambda e: command())
-            canvas.config(cursor="hand2")
-            return frame
+        tk.Label(main, text="🧠 Тест Стэнфорд-Бине",
+                 font=("Arial", 32, "bold"), bg=self.colors["bg"], fg=self.colors["text"]).pack(pady=30)
+        tk.Label(main, text="Пятая редакция",
+                 font=("Arial", 18), bg=self.colors["bg"], fg=self.colors["light_text"]).pack(pady=10)
+        tk.Label(main, text="", bg=self.colors["bg"]).pack(pady=20)
 
-        def create_rounded_entry(self, parent, textvariable, width=40):
-            """Создаёт поле ввода со скруглёнными углами"""
-            frame = tk.Frame(parent, bg=self.colors["bg"])
-            frame.pack(fill="x", pady=5)
-            canvas = tk.Canvas(frame, height=45, bg=self.colors["bg"], highlightthickness=0)
-            canvas.pack(fill="x")
-            entry = tk.Entry(canvas, textvariable=textvariable, font=("Arial", 14), bg="white", fg=self.colors["text"],
-                             relief="flat", bd=0)
+        btn_exit = tk.Button(main, text="❌ ВЫХОД", font=("Arial", 16, "bold"),
+                             bg=self.colors["wrong"], fg=self.colors["text"],
+                             command=self.window.quit, cursor="hand2")
+        btn_exit.pack(pady=10)
 
-            def redraw(e):
-                canvas.delete("rect")
-                w = e.width
-                self.create_round_rect(canvas, 5, 5, w - 5, 40, radius=15, fill="white", outline=self.colors["primary"],
-                                       width=2, tags="rect")
-                canvas.itemconfig(entry, width=w - 20)
+    def run(self):
+        self.window.mainloop()
 
-            canvas.bind("<Configure>", redraw)
-            canvas.create_window(10, 22, window=entry, anchor="w", width=canvas.winfo_width() - 20)
-            return frame
+
+if __name__ == "__main__":
+    app = StanfordBinetTest()
+    app.run()
