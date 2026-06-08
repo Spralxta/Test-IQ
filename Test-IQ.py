@@ -1,6 +1,6 @@
 """
 ТЕСТ СТЭНФОРД-БИНЕ (Пятая редакция)
-ФИНАЛЬНАЯ ВЕРСИЯ - 60 уникальных вопросов
+ФИНАЛЬНАЯ ВЕРСИЯ - правильная формула расчета IQ
 """
 
 import tkinter as tk
@@ -16,7 +16,7 @@ class StanfordBinetTest:
         self.window.title("Тест Стэнфорд-Бине")
         self.window.state('zoomed')
 
-        # Пастельная цветовая схема
+        # Цветовая схема
         self.colors = {
             "bg": "#faf0e6",        # Тёплый бежевый
             "card": "#fff5e6",       # Светло-кремовый
@@ -236,9 +236,8 @@ class StanfordBinetTest:
         })
 
     def load_60_questions(self):
-        """Загружает 60 уникальных вопросов с перемешанными вариантами ответов"""
+        """Загружает 60 уникальных вопросов"""
 
-        # Создаем список из 60 уникальных вопросов
         questions_raw = [
             # УРОВЕНЬ 2-3 ГОДА (5 вопросов)
             (2, "Что бывает зелёным?", "Трава", ["Трава", "Снег", "Небо", "Солнце"], "Знания"),
@@ -317,7 +316,7 @@ class StanfordBinetTest:
             (12, "Сколько диагоналей у пятиугольника?", "5", ["5", "6", "7", "8"], "Пространств. мышление"),
             (12, "Что такое теорема Пифагора?", "a² + b² = c²", ["a² + b² = c²", "a + b = c", "a × b = c", "a - b = c"], "Знания"),
 
-            # УРОВЕНЬ 13-14 ЛЕТ (5 вопросов) - ДОБАВЛЯЕМ НЕДОСТАЮЩИЕ
+            # УРОВЕНЬ 13-14 ЛЕТ (5 вопросов)
             (13, "Решите: 3² + 4² = ?", "25", ["25", "7", "12", "49"], "Колич. мышление"),
             (13, "Что такое проекция?", "Отображение на плоскость", ["Отображение на плоскость", "Увеличение", "Поворот", "Деление"], "Пространств. мышление"),
             (13, "Какая планета самая близкая к Солнцу?", "Меркурий", ["Меркурий", "Венера", "Земля", "Марс"], "Знания"),
@@ -325,23 +324,15 @@ class StanfordBinetTest:
             (13, "Решите: sin(90°) = ?", "1", ["1", "0", "-1", "∞"], "Колич. мышление"),
         ]
 
-        print(f"Загружено {len(questions_raw)} уникальных вопросов")
-
-        # Для каждого вопроса перемешиваем варианты ответов
         for level, text, correct_answer, answer_options, factor in questions_raw:
-            # Создаем пары (индекс, текст)
             options = list(enumerate(answer_options, 1))
-            # Перемешиваем варианты
             random.shuffle(options)
-            # Получаем перемешанные ответы
             shuffled_answers = [opt[1] for opt in options]
-            # Находим новую позицию правильного ответа
             new_correct = None
             for i, (original_pos, answer_text) in enumerate(options):
                 if answer_text == correct_answer:
                     new_correct = i + 1
                     break
-
             self.add_question(level, text, shuffled_answers, new_correct, factor)
 
         print(f"Загружено {len(self.all_questions)} вопросов из 60")
@@ -585,12 +576,8 @@ class StanfordBinetTest:
         name = self.name_var.get().strip()
         age_str = self.age_var.get().strip()
 
-        if not name:
-            messagebox.showerror("Ошибка", "Пожалуйста, введите ваше имя")
-            return
-
-        if not age_str:
-            messagebox.showerror("Ошибка", "Пожалуйста, введите ваш возраст")
+        if not name or not age_str:
+            messagebox.showerror("Ошибка", "Пожалуйста, заполните все поля")
             return
 
         try:
@@ -817,7 +804,7 @@ class StanfordBinetTest:
                 self.calculate_results()
 
     def calculate_results(self):
-        """Рассчитывает результаты"""
+        """Рассчитывает результаты по правильной формуле IQ"""
         self.timer_running = False
         self.test_active = False
 
@@ -825,21 +812,24 @@ class StanfordBinetTest:
         minutes = elapsed.seconds // 60
         seconds = elapsed.seconds % 60
 
-        # Процент правильных ответов
-        percentage = (self.score / self.total_questions) * 100
+        # Сырой балл - количество правильных ответов
+        raw_score = self.score
 
-        # Новая формула расчета IQ
-        # Базовый IQ = 85 + (процент правильных * 0.35)
-        # Это даст диапазон примерно от 85 до 120 для нормального распределения
-        base_iq = 85 + (percentage * 0.35)
-
-        # Корректировка по возрасту
+        # Среднее для возраста (ожидаемое количество правильных ответов)
         if self.user_data['age'] < 10:
-            iq_score = base_iq * 0.95
-        elif self.user_data['age'] < 60:
-            iq_score = base_iq
+            mean = 30  # Дети 7-9 лет: около 30 правильных из 60
+        elif self.user_data['age'] < 14:
+            mean = 35  # Подростки 10-13 лет: около 35 правильных из 60
+        elif self.user_data['age'] < 18:
+            mean = 40  # Старшие подростки: около 40 правильных из 60
         else:
-            iq_score = base_iq * 0.98
+            mean = 42  # Взрослые: около 42 правильных из 60
+
+        # Стандартное отклонение (для 60 вопросов)
+        std_dev = 9
+
+        # Расчет IQ по формуле: IQ = 100 + 15 × ((сырой балл - среднее) / стандартное отклонение)
+        iq_score = 100 + 15 * ((raw_score - mean) / std_dev)
 
         # Ограничиваем разумные пределы
         iq_score = max(40, min(iq_score, 160))
@@ -859,7 +849,6 @@ class StanfordBinetTest:
             category = "Очень высокий"
 
         # Ментальный возраст на основе IQ
-        # Ментальный возраст = (IQ / 100) * хронологический возраст
         self.mental_age_months = (iq_score / 100) * self.user_data['chronological_age_months']
 
         self.show_results_screen(iq_score, category, minutes, seconds)
